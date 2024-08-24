@@ -1,10 +1,28 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-  </head>
-  <body>
-    <h1>Welcome to <%= title %></h1>
-    <p><%= message %></p>
-  </body>
-</html>
+<%- include('partials/header') %>
+
+<div class="ip-container">
+  <% guestbook.forEach(entry => { %>
+  <span class="ip <%= entry.ip === ip ? 'my' : '' %>">
+    <%- include('flag', {countryCode: entry.countryCode}, flagMap) -%> <%=
+    entry.ip %>
+    <div>
+      <%= entry.createdAt.toISOString().slice(0, 19).replace("T", " ") %>
+    </div>
+    <div class="ip-message"><%= entry.message %></div>
+  </span>
+  <% }); %>
+</div>
+
+<script>
+  document.querySelectorAll(".ip").forEach((flag) => {
+    flag.addEventListener("click", () => {
+      flag.classList.add("show-tooltip");
+
+      setTimeout(() => {
+        flag.classList.remove("show-tooltip");
+      }, 600);
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

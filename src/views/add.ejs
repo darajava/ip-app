@@ -1,0 +1,202 @@
+<%- include('partials/header') %>
+
+<style>
+  .modal-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  .modal {
+    max-width: 500px;
+    min-width: 180px;
+    margin: 0 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 30px;
+  }
+
+  .modal textarea {
+    flex: 1;
+    width: 100%;
+
+    min-height: 100px;
+
+    resize: none;
+    outline: none;
+    border-radius: 8px;
+    padding: 10px;
+
+    font-size: 18px;
+  }
+
+  .modal button {
+    width: 100%;
+    padding: 10px;
+
+    border: 0px solid black;
+    border-radius: 8px;
+
+    background-color: rgb(210, 220, 255);
+    cursor: pointer;
+
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal button:hover {
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal button:active {
+    box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal button.secondary {
+    background-color: white;
+
+    border: 0;
+
+    color: grey;
+
+    font-weight: bold;
+  }
+
+  .message {
+    text-align: center;
+    width: 100%;
+
+    font-size: 14px;
+  }
+
+  .textarea-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .remaining {
+    position: absolute;
+    bottom: -12px;
+    right: 0;
+
+    font-size: 12px;
+  }
+
+  .remaining.error {
+    color: red;
+  }
+
+  .animate-remaining {
+    animation: animate-remaining 0.2s ease-in-out;
+  }
+
+  @keyframes animate-remaining {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .error-message {
+    color: red;
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+
+<div class="modal-container">
+  <div class="modal">
+    <div class="message">
+      You will be able to leave <b> one </b> message in this guestbook using
+      this IP address: (<b><%= ip %></b>). You will never be able to edit or
+      delete it.
+    </div>
+    <div class="textarea-container">
+      <textarea autofocus placeholder="Add your message"></textarea>
+      <div class="remaining"></div>
+    </div>
+    <span class="error-message hidden"></span>
+    <button onclick="submit()">
+      Share my message and IP address with the world
+    </button>
+  </div>
+</div>
+
+<script>
+  const textarea = document.querySelector("textarea");
+  const remaining = document.querySelector(".remaining");
+
+  const calculateRemaining = () => {
+    if (textarea.value.length > 256) {
+      remaining.classList.add("error");
+    } else {
+      if (remaining.classList.contains("error")) {
+        remaining.classList.remove("error");
+      }
+    }
+
+    remaining.textContent = `${textarea.value.length}/256`;
+  };
+
+  calculateRemaining();
+  textarea.addEventListener("input", calculateRemaining);
+
+  const submit = async () => {
+    if (textarea.value.length > 256) {
+      remaining.classList.add("animate-remaining");
+      setTimeout(() => {
+        remaining.classList.remove("animate-remaining");
+      }, 200);
+      return;
+    }
+
+    console.log("submitting", textarea.value);
+
+    await fetch("/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: textarea.value,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json();
+
+          throw new Error(errorData.error);
+        }
+
+        return res.json();
+      })
+      .then((res) => {
+        console.log(res);
+        if (res.success) {
+          window.location.href = "/";
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        document.querySelector(".error-message").textContent = err.message;
+        document.querySelector(".error-message").classList.remove("hidden");
+      });
+  };
+</script>
+
+<%- include('partials/footer') %>
