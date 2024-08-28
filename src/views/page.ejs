@@ -1,12 +1,2 @@
-<% guestbook.forEach(entry => { %>
-<span class="ip <%= entry.ip === ip ? 'my' : '' %>">
-  <div><%- include('flag', {countryCode: entry.countryCode}) -%></div>
-
-  <div><%= entry.ip %><%= entry.ip === ip ? ' (you)' : '' %></div>
-
-  <div><%= entry.createdAt.toISOString().slice(0, 19).replace("T", " ") %></div>
-  <div class="ip-message"><%= entry.message %></div>
-</span>
-<% }); %>
-
-<div style="height: 100px; background-color: red; width: 100%"></div>
+<% guestbook.forEach(entry => { %> <%- include('entry', {entry: entry}) -%> <%
+}); %>

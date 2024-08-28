@@ -1,0 +1,13 @@
+<span class="ip <%= entry.ip === ip ? 'my' : '' %>">
+  <div class="info-container">
+    <div><%- include('flag', {countryCode: entry.countryCode}) -%></div>
+    <div class="info">
+      <%= entry.ip %><%= entry.ip === ip ? ' (you)' : '' %>
+    </div>
+    <div class="info">
+      <%= entry.createdAt.toISOString().slice(0, 19).replace("T", " ") %>
+    </div>
+  </div>
+
+  <div class="message"><%= entry.message %></div>
+</span>

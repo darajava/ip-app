@@ -3,6 +3,39 @@
 <div class="ip-container invisible">
   <%- include('page', { guestbook: guestbook }) -%>
 </div>
+<button class="my-info">
+  <img src="./info.svg" />
+</button>
+
+<div class="modal-container fixed hidden">
+  <div class="modal">
+    <div class="message">
+      <h1>About</h1>
+
+      <p>
+        Created by Dara Java (<a
+          href="https://github.com/darajava"
+          target="_blank"
+          >Github</a
+        >)
+      </p>
+
+      <p>
+        Building
+        <a href="https://audiodiary.ai" target="_blank">Audio Diary</a> solo
+      </p>
+
+      <p>
+        Donate on
+        <a href="https://ko-fi.com/darajava" target="_blank">Ko-fi</a>
+      </p>
+
+      <p>
+        Email me at <a href="mailto:dara@audiodiary.ai">dara@audiodiary.ai</a>
+      </p>
+    </div>
+  </div>
+</div>
 
 <script>
   const flagMap = {
@@ -258,7 +291,7 @@
   };
 
   const addFlagListeners = () => {
-    document.querySelectorAll(".ip").forEach((flag) => {
+    document.querySelectorAll(".ip .info-container").forEach((flag) => {
       if (flag.getAttribute("listener") !== "true") {
         flag.setAttribute("listener", "true");
         flag.addEventListener("click", () => {
@@ -293,6 +326,10 @@
     }, 300);
 
     const scrollHandler = () => {
+      if (reachedEnd) {
+        return;
+      }
+
       const scrollPosition = window.scrollY;
 
       if (scrollPosition < 200) {
@@ -307,10 +344,16 @@
   });
 
   let page = 1;
+  let reachedEnd = false;
   async function loadPage() {
     const res = await fetch(`/page/${page++}`);
     console.log(res);
     const html = await res.text();
+
+    if (html === "end") {
+      reachedEnd = true;
+      return;
+    }
 
     // window.scrollTo(0, document.body.scrollHeight);
     console.log("loaded");
@@ -318,6 +361,23 @@
     prependNewContent(html);
 
     loadingPage = false;
+  }
+
+  function appendNewContent(newContent) {
+    const isAlmostScrolledToBottom =
+      window.innerHeight + window.scrollY >= document.body.scrollHeight - 10;
+
+    var contentDiv = document.querySelector(".ip-container");
+    contentDiv.insertAdjacentHTML("beforeend", newContent);
+
+    addFlagListeners();
+    if (isAlmostScrolledToBottom) {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        left: 0,
+        behavior: "smooth",
+      });
+    }
   }
 
   function prependNewContent(newContent) {
@@ -345,6 +405,79 @@
 
     window.scrollTo(0, scrollTopBefore + heightOfNewContent);
   }
+
+  function initWebSocket() {
+    // Connect to the WebSocket server
+    const ws = new WebSocket("ws://localhost:8080");
+
+    // Handle incoming messages
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      const payload = JSON.parse(message.messageJSON);
+
+      switch (message.action) {
+        case "entryAdded":
+          appendNewContent(payload.html);
+          break;
+
+        case "ping":
+          console.log("pong");
+          ws.send(JSON.stringify({ action: "pong" }));
+        default:
+          break;
+      }
+    };
+
+    // Handle connection open
+    ws.onopen = () => {
+      console.log("Connected to server");
+    };
+
+    // Handle connection close
+    ws.onclose = () => {
+      console.log("Disconnected from server");
+
+      setTimeout(() => {
+        initWebSocket();
+      }, 2000);
+    };
+
+    // // Send a message when the button is clicked
+    // document.getElementById("sendButton").addEventListener("click", () => {
+    //   const input = document.getElementById("messageInput");
+    //   ws.send(input.value);
+    //   input.value = "";
+    // });
+  }
+
+  initWebSocket();
+
+  function initInfoModal() {
+    const infoButton = document.querySelector(".my-info");
+
+    infoButton.addEventListener("click", () => {
+      const modal = document.querySelector(".modal-container");
+      modal.classList.remove("hidden");
+    });
+
+    const modalBackdrop = document.querySelector(".modal-container");
+    modalBackdrop.addEventListener("click", (e) => {
+      modalBackdrop.classList.add("hidden");
+    });
+
+    const modal = document.querySelector(".modal");
+    modal.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
+    document.addEventListener("keydown", () => {
+      if (e.key === "Escape") {
+        modalBackdrop.classList.add("hidden");
+      }
+    });
+  }
+
+  initInfoModal();
 </script>
 
 <%- include('partials/footer') %>

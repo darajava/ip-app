@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+
+<style></style>
+
+<div class="modal-container">
+  <div class="modal">
+    <div class="message">
+      <h1>Boring!</h1>
+
+      <p>
+        Sorry, the message you provided was not interesting enough to post on
+        this guestbook.
+      </p>
+
+      <p>Your given message was:</p>
+
+      <quote><%= message %></quote>
+
+      <p>and was rejected because:</p>
+      <quote><%= boringReason %></quote>
+
+      <br />
+      <p>As a result, you are forever banned from posting on this guestbook.</p>
+    </div>
+
+    <button onclick="document.location.href = '/'">
+      View more interesting messages
+    </button>
+  </div>
+  <small
+    >Very rarely, we are wrong. You may appeal this lifetime ban by emailing
+    darajavaherian@gmail.com, quoting your IP address (<%= ip %>)</small
+  >
+</div>
+
+<script></script>
+
+<%- include('partials/footer') %>

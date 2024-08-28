@@ -8,7 +8,7 @@
     "build:ts": "tsc",
     "build:copy": "copyfiles -u 1 src/views/**/* build/",
     "start": "node build/app.js",
-    "dev": "nodemon --watch src --exec ts-node src/app.ts"
+    "dev": "nodemon --signal SIGTERM --watch src --exec ts-node src/app.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,12 +18,16 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "geoip-lite": "^1.4.10",
-    "mysql2": "^3.11.0"
+    "mysql2": "^3.11.0",
+    "openai": "^4.56.1",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/ejs": "^3.1.5",
     "@types/express": "^4.17.21",
     "@types/geoip-lite": "^1.4.4",
     "@types/node": "^22.5.0",
+    "@types/ws": "^8.5.12",
     "copyfiles": "^2.4.1",
     "nodemon": "^3.1.4",
     "npm-run-all": "^4.1.5",
