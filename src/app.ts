@@ -205,8 +205,7 @@ app.post("/add", async (req: Request, res: Response) => {
 });
 
 const openai = new OpenAI({
-  apiKey:
-    "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",
+  apiKey: process.env.OPENAI_KEY,
 });
 
 const isBoring = async (message: string) => {
