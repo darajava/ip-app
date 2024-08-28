@@ -33,25 +33,23 @@ setInterval(async () => {
   addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
 }, 1000);
 
-app.get("/boring", async (req: Request, res: Response) => {
+app.get("/banned", async (req: Request, res: Response) => {
   const ip = await getIp(req);
 
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
   }
 
-  const boringSql = `SELECT * FROM guestbook WHERE ip = ?`;
-  const [boring] = (await connection.query(boringSql, [ip])) as any[];
+  const bannedSql = `SELECT * FROM guestbook WHERE ip = ?`;
+  const [banned] = (await connection.query(bannedSql, [ip])) as any[];
 
-  console.log(boring);
-
-  if (!boring[0]) {
+  if (!banned[0]) {
     return res.redirect("/");
   }
 
-  return res.render("boring", {
-    message: boring[0].message,
-    boringReason: boring[0].boringReason,
+  return res.render("banned", {
+    message: banned[0].message,
+    reason: banned[0].reason,
     ip,
   });
 });
@@ -71,9 +69,12 @@ app.get("/", async (req: Request, res: Response) => {
   // }
 
   if (await hasSigned(ip)) {
+    console.log(
+      "already signed",
+      await getGuestbookPage(0, (await getIp(req)) as string)
+    );
     return res.render("index", {
       ip,
-
       guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
     });
   } else {
@@ -146,7 +147,9 @@ const addRandomEntry = async (ip: string) => {
   await addToDb(
     ip,
     countries[Math.floor(Math.random() * countries.length)],
-    sentenceOfLength(Math.floor(Math.random() * 256))
+    sentenceOfLength(Math.floor(Math.random() * 256)),
+    false,
+    "hi"
   );
 };
 
@@ -191,24 +194,18 @@ app.post("/add", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Weird IP provided" });
   }
 
-  const boringInfo = await isBoring(message);
+  const bannedInfo = await isBanned(message);
 
-  if (boringInfo.boring) {
-    await addToDb(ip, countryCode, message, boringInfo.reason);
+  await addToDb(ip, countryCode, message, bannedInfo.banned, bannedInfo.reason);
 
-    return res.status(200).json({ boring: true });
-  }
-
-  await addToDb(ip, countryCode, message);
-
-  return res.status(200).json({ success: true });
+  return res.status(200).json({ banned: bannedInfo.banned, success: true });
 });
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
 
-const isBoring = async (message: string) => {
+const isBanned = async (message: string) => {
   const resp = await openai.chat.completions.create({
     messages: [
       {
@@ -216,21 +213,35 @@ const isBoring = async (message: string) => {
         content: `
         We asked the user to supply a message for display in a public guestbook.
 
-        The message must make sense. It should not be needlessly profane. It can be extremely offensive as long as it doesn't contain profanity. It must not be boring. It must not be nonsensical. It must have fully complete sentences and good grammar. If it is any of those things, it is not a suitable message for the guestbook. Most importantly, it must be interesting.
-
         If the user writes in a language other than English, the reason must be provided in that language.
 
         The message supplied was: "${message}"
+
+        The message must be interesting AND must not contain profanity AND not be nonsensical AND have good grammar and spelling. Above all, it should be interesting and original for it to be suitable for the guestbook.
 
         Reply in JSON format with the following fields:
 
         {
           "suitable": true | false,
+          "interesting": true | false,
           "inputLanguage": // language of the message given
-          "reason": // reason for the verdict
+          "reason": // reason for the verdict. Be harsh. Don't tell them to try again because they will be banned.
         }
 
         do not return a string in the suitable field, return true or false in bool format
+
+
+        Examples of uninteresting messages:
+
+        I had a lot of chores to do today and I did them all.
+        
+        I woke up and went to work, then I came home and watched netflix and then I went to bed.
+
+
+
+        Examples of interesting messages:
+
+        I will never again talk about politics with my friends or family. It's pointless and can ruin relationships.
         `,
       },
     ],
@@ -242,14 +253,14 @@ const isBoring = async (message: string) => {
   if (!resp.choices[0].message.content) {
     console.log("No response from openai");
     return {
-      boring: false,
+      banned: false,
     };
   }
 
   let gptInfo = JSON.parse(resp.choices[0].message.content);
   console.log(gptInfo);
   return {
-    boring: !gptInfo.suitable,
+    banned: !gptInfo.suitable,
     reason: gptInfo.reason,
   };
 };
@@ -290,15 +301,16 @@ const addToDb = async (
   ip: string,
   countryCode: string,
   message: string,
-  boringReason?: string
+  banned: boolean,
+  reason: string
 ) => {
   try {
     await connection.query(
-      `INSERT INTO guestbook (ip, countryCode, message, hidden, boringReason) VALUES (?, ?, ?, ?, ?)`,
-      [ip, countryCode, message, !!boringReason, boringReason]
+      `INSERT INTO guestbook (ip, countryCode, message, hidden, reason) VALUES (?, ?, ?, ?, ?)`,
+      [ip, countryCode, message, banned, reason]
     );
 
-    if (!!boringReason) {
+    if (!!reason) {
       return;
     }
 
@@ -334,7 +346,11 @@ const getGuestbookPage = async (page: number, ip: string) => {
       LIMIT ${pageSize} OFFSET ${offset}
   ) subquery
   ORDER BY id ASC;`;
+
+  console.log(sql);
   const result = await connection.query(sql);
+
+  console.log(result);
 
   return result[0] as any[];
 };
@@ -354,7 +370,7 @@ const initDb = async () => {
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     message VARCHAR(1000),
     hidden TINYINT(1) NOT NULL DEFAULT 0,
-    boringReason VARCHAR(1000) DEFAULT NULL,
+    reason VARCHAR(1000) DEFAULT NULL,
     INDEX (ip)
   );`;
 

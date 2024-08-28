@@ -70,9 +70,9 @@
 
       <br /><br />
 
-      Entries will not be posted if they are deemed uninteresting. Share wisdom,
-      ideas, jokes, quotes, what you are doing right now, or similarly
-      interesting messages.
+      Entries will not be posted if they are deemed uninteresting or otherwise
+      not suitable for a public guestbook. Share wisdom, ideas, jokes, quotes,
+      where you are in your life, or similarly interesting messages.
     </div>
     <div class="textarea-container">
       <textarea autofocus placeholder="Add your message"></textarea>
@@ -103,11 +103,6 @@
 
   calculateRemaining();
   textarea.addEventListener("input", calculateRemaining);
-  textarea.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      submit();
-    }
-  });
 
   const submit = async () => {
     if (textarea.value.length > 256) {
@@ -146,10 +141,10 @@
       })
       .then((res) => {
         console.log(res);
-        if (res.success) {
+        if (res.banned) {
+          window.location.href = "/banned";
+        } else if (res.success) {
           window.location.href = "/";
-        } else if (res.boring) {
-          window.location.href = "/boring";
         }
       })
       .catch((err) => {

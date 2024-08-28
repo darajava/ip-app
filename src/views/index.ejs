@@ -470,7 +470,7 @@
       e.stopPropagation();
     });
 
-    document.addEventListener("keydown", () => {
+    document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         modalBackdrop.classList.add("hidden");
       }

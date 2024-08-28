@@ -5,21 +5,25 @@
 <div class="modal-container">
   <div class="modal">
     <div class="message">
-      <h1>Boring!</h1>
+      <h1>BANNED</h1>
 
       <p>
         Sorry, the message you provided was not interesting enough to post on
         this guestbook.
       </p>
 
-      <p>Your given message was:</p>
+      <p>Your message was:</p>
 
-      <quote><%= message %></quote>
+      <p>
+        <quote><%= message %></quote>
+      </p>
 
-      <p>and was rejected because:</p>
-      <quote><%= boringReason %></quote>
+      <p>It was rejected because:</p>
 
-      <br />
+      <p>
+        <quote><%= reason %></quote>
+      </p>
+
       <p>As a result, you are forever banned from posting on this guestbook.</p>
     </div>
 
@@ -28,8 +32,8 @@
     </button>
   </div>
   <small
-    >Very rarely, we are wrong. You may appeal this lifetime ban by emailing
-    darajavaherian@gmail.com, quoting your IP address (<%= ip %>)</small
+    >Very rarely, we are wrong. You may appeal this lifetime ban by sending us
+    an email and quoting your ip address (<%= ip %>).</small
   >
 </div>
 
