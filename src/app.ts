@@ -284,6 +284,8 @@ const getIp = async (req: Request) => {
     ip = realIps[1];
   }
 
+  ip = ip?.replace("::ffff:", "");
+
   return ip;
 };
 
