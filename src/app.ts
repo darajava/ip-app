@@ -85,6 +85,14 @@ app.get("/", async (req: Request, res: Response) => {
   }
 });
 
+app.get("/guestbook", async (req: Request, res: Response) => {
+  const ip = await getIp(req);
+  return res.render("index", {
+    ip,
+    guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
+  });
+});
+
 const populateDummy = async () => {
   let ii = 0;
   for (let j = 100; j < 101; j++) {
