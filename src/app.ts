@@ -32,13 +32,23 @@ app.set("trust proxy", "loopback");
 
 let connection: mysql.Connection;
 
-// setInterval(async () => {
-//   const random1 = Math.floor(Math.random() * 255);
-//   const random2 = Math.floor(Math.random() * 255);
-//   const random3 = Math.floor(Math.random() * 255);
-//   const random4 = Math.floor(Math.random() * 255);
-//   addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
-// }, 1000);
+setInterval(async () => {
+  const random1 = Math.floor(Math.random() * 255);
+  const random2 = Math.floor(Math.random() * 255);
+  const random3 = Math.floor(Math.random() * 255);
+  const random4 = Math.floor(Math.random() * 255);
+  addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
+}, 1000);
+
+const addRandomEntry = async (ip: string) => {
+  addToDb(
+    ip,
+    "de",
+    "Random entry" + ip,
+    false,
+    "Random entry added by the bot"
+  );
+};
 
 app.get("/banned", async (req: Request, res: Response) => {
   const ip = await getIp(req);
@@ -338,6 +348,7 @@ const addToDb = async (
         html: await ejs.renderFile(path.join("./src/views", "entry.ejs"), {
           entry: justInserted[0],
           ip: "null",
+          isAdmin: await isAdmin(ip),
         }),
       }),
     });
