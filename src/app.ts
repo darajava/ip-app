@@ -105,7 +105,6 @@ const populateDummy = async () => {
 };
 
 const addRandomEntry = async (ip: string) => {
-  console.log("adding", ip);
   const countries = ["de", "br", "us", "ru", "fr", "es", "it", "jp", "cn"];
 
   function generateRandomSentence(): string {
@@ -267,7 +266,6 @@ const isMessageSuitable = async (message: string) => {
   }
 
   let gptInfo = JSON.parse(resp.choices[0].message.content);
-  console.log(gptInfo);
   return {
     banned: !gptInfo.suitable,
     reason: gptInfo.reason,
@@ -335,7 +333,9 @@ const addToDb = async (
       [ip]
     )) as any[];
 
-    console.log(justInserted);
+    if (await isBanned(ip)) {
+      return;
+    }
 
     broadcast({
       action: "entryAdded",
@@ -365,10 +365,7 @@ const getGuestbookPage = async (page: number, ip: string) => {
   ) subquery
   ORDER BY id ASC;`;
 
-  console.log(sql);
   const result = await connection.query(sql);
-
-  console.log(result);
 
   return result[0] as any[];
 };
