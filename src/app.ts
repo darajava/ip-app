@@ -380,7 +380,7 @@ const addToDb = async (
       messageJSON: JSON.stringify({
         html: await ejs.renderFile(path.join("./src/views", "entry.ejs"), {
           entry: justInserted[0],
-          ip: "null",
+          ip: req ? getIp(req) || "0.0.0.0" : "0.0.0.0",
           isAdmin: req ? await isAdmin(getIp(req) || "0.0.0.0") : false,
         }),
       }),
