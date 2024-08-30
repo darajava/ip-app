@@ -10,7 +10,7 @@
     "build:copy": "copyfiles -u 1 src/views/* build/; copyfiles -u 1 src/views/**/* build/; copyfiles .env build/",
     "start": "node -r dotenv/config build/app.js",
     "dev": "nodemon -r dotenv/config --signal SIGTERM --watch src --exec ts-node src/app.ts",
-    "pm2:start": "cd build; source .env && pm2 --node-args=\"-r dotenv/config\" start app.js --name guestbook-server"
+    "pm2:start": "cd build; pm2 --node-args=\"-r dotenv/config\" start app.js --name guestbook-server"
   },
   "keywords": [],
   "author": "",
