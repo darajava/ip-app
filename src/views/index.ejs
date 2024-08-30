@@ -433,11 +433,10 @@
       console.log("Connected to server");
     };
 
-    // Handle connection close
-    ws.onclose = (w, closeEvent) => {
-      console.log("Connection closed", closeEvent);
-      console.log("Disconnected from server");
-
+    ws.onclose = function (event) {
+      console.log(
+        `Connection closed. Code: ${event.code}, Reason: ${event.reason}`
+      );
       setTimeout(() => {
         initWebSocket();
       }, 2000);
