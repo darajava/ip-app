@@ -359,7 +359,7 @@ const initDb = async () => {
   console.log("Connected to MySQL", process.env.DB_PASS);
   try {
     connection = await mysql.createConnection({
-      host: "::1",
+      host: "127.0.0.1",
       user: "root",
       password: process.env.DB_PASS,
       database: "guestbook",
