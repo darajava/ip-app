@@ -245,11 +245,16 @@ const isMessageSuitable = async (message: string) => {
         
         I woke up and went to work, then I came home and watched netflix and then I went to bed.
 
+        Hi there honey.
 
 
         Examples of interesting messages:
 
         I will never again talk about politics with my friends or family. It's pointless and can ruin relationships.
+        
+        Look around and pick one beautiful thing about your surroundings. We are so lucky to be here!
+
+        Goodbye ip, you made a great home for 6 years. So much YouTube watched through you
         `,
       },
     ],
