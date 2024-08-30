@@ -32,13 +32,13 @@ app.set("trust proxy", "loopback");
 
 let connection: mysql.Connection;
 
-setInterval(async () => {
-  const random1 = Math.floor(Math.random() * 255);
-  const random2 = Math.floor(Math.random() * 255);
-  const random3 = Math.floor(Math.random() * 255);
-  const random4 = Math.floor(Math.random() * 255);
-  addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
-}, 1000);
+// setInterval(async () => {
+//   const random1 = Math.floor(Math.random() * 255);
+//   const random2 = Math.floor(Math.random() * 255);
+//   const random3 = Math.floor(Math.random() * 255);
+//   const random4 = Math.floor(Math.random() * 255);
+//   addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
+// }, 1000);
 
 const addRandomEntry = async (ip: string) => {
   addToDb(
@@ -51,7 +51,7 @@ const addRandomEntry = async (ip: string) => {
 };
 
 app.get("/banned", async (req: Request, res: Response) => {
-  const ip = await getIp(req);
+  const ip = getIp(req);
 
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
@@ -72,7 +72,7 @@ app.get("/banned", async (req: Request, res: Response) => {
 });
 
 app.put("/toggle/:ipToToggle", async (req: Request, res: Response) => {
-  const ip = await getIp(req);
+  const ip = getIp(req);
 
   const ipToToggle = req.params.ipToToggle;
 
@@ -91,7 +91,7 @@ app.put("/toggle/:ipToToggle", async (req: Request, res: Response) => {
 });
 
 app.get("/", async (req: Request, res: Response) => {
-  const ip = await getIp(req);
+  const ip = getIp(req);
 
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
@@ -111,7 +111,7 @@ app.get("/", async (req: Request, res: Response) => {
 
     return res.render("index", {
       ip,
-      guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
+      guestbook: await getGuestbookPage(0, getIp(req) as string),
       isAdmin: await isAdmin(ip),
     });
   } else {
@@ -123,7 +123,7 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 app.get("/guestbook", async (req: Request, res: Response) => {
-  const ip = await getIp(req);
+  const ip = getIp(req);
 
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
@@ -132,20 +132,20 @@ app.get("/guestbook", async (req: Request, res: Response) => {
   return res.render("index", {
     ip,
     isAdmin: await isAdmin(ip),
-    guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
+    guestbook: await getGuestbookPage(0, getIp(req) as string),
   });
 });
 
 app.get("/page/:page(\\d+)", async (req: Request, res: Response) => {
   const page = parseInt(req.params.page);
 
-  const guestbook = await getGuestbookPage(page, (await getIp(req)) as string);
+  const guestbook = await getGuestbookPage(page, getIp(req) as string);
 
   if (!guestbook.length) {
     return res.status(200).send("end");
   }
 
-  const ip = await getIp(req);
+  const ip = getIp(req);
 
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
@@ -159,7 +159,7 @@ app.get("/page/:page(\\d+)", async (req: Request, res: Response) => {
 });
 
 app.post("/add", async (req: Request, res: Response) => {
-  const ip = await getIp(req);
+  const ip = getIp(req);
   const { message } = req.body;
 
   if (!message) {
@@ -186,7 +186,14 @@ app.post("/add", async (req: Request, res: Response) => {
 
   const bannedInfo = await isMessageSuitable(message);
 
-  await addToDb(ip, countryCode, message, bannedInfo.banned, bannedInfo.reason);
+  await addToDb(
+    ip,
+    countryCode,
+    message,
+    bannedInfo.banned,
+    bannedInfo.reason,
+    req
+  );
 
   return res.status(200).json({ banned: bannedInfo.banned, success: true });
 });
@@ -296,7 +303,7 @@ const getCountryCode = async (ip: string) => {
   return countryCode;
 };
 
-const getIp = async (req: Request) => {
+const getIp = (req: Request) => {
   let ip = req.headers["x-real-ip"] || req.socket.remoteAddress;
 
   if (Array.isArray(ip)) {
@@ -329,7 +336,8 @@ const addToDb = async (
   countryCode: string,
   message: string,
   banned: boolean,
-  reason: string
+  reason: string,
+  req?: Request
 ) => {
   try {
     await connection.query(
@@ -348,7 +356,7 @@ const addToDb = async (
         html: await ejs.renderFile(path.join("./src/views", "entry.ejs"), {
           entry: justInserted[0],
           ip: "null",
-          isAdmin: await isAdmin(ip),
+          isAdmin: req ? await isAdmin(getIp(req) || "0.0.0.0") : false,
         }),
       }),
     });
