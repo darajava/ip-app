@@ -266,6 +266,8 @@ const isMessageSuitable = async (message: string) => {
 
         Hi there honey.
 
+        Greetings from California.
+
         ---------------
 
         Examples of interesting messages:
@@ -277,6 +279,8 @@ const isMessageSuitable = async (message: string) => {
         Goodbye ip, you made a great home for 6 years. So much YouTube watched through you
 
         I learned that in the pursuit of success, you need to work hard. But by working hard the most rewarding thing that is gained is in fact the ability to work hard. I’ve learned that hard work is a great feeling and that is my success.
+
+        Life is Pain . . . au chocolat // this is a good message because it is funny 
         `,
       },
     ],

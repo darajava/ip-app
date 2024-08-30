@@ -59,23 +59,8 @@
 <div class="modal-container">
   <div class="modal">
     <div class="message">
-      You are able to leave a message in this guestbook using this IP address:
-
-      <div class="add-ip-holder">
-        <%- include('flag', {countryCode: countryCode}) -%><b><%= ip %></b>
-      </div>
-
-      Your message and IP address will be displayed publicly forever. You will
-      <b>never</b> be able to edit or delete it.
-
-      <br /><br />
-
-      Share wisdom, ideas, jokes, quotes, where you are in your life, or
-      similarly interesting messages.
-
-      <br /><br />
-
-      Make sure to keep it <b>interesting</b> and <b>civil</b>. Thanks!
+      Write an <em>interesting</em> message. You will <em>never</em> be able to
+      edit or delete it.
     </div>
     <div class="textarea-container">
       <textarea autofocus placeholder="Add your message"></textarea>
@@ -83,7 +68,7 @@
     </div>
     <span class="error-message hidden"></span>
     <button onclick="submit()" id="submit-button">
-      Share my message and view guestbook
+      Share my message and view the guestbook
     </button>
   </div>
 </div>
