@@ -1,4 +1,8 @@
-<span class="ip <%= entry.ip === ip ? 'my' : '' %>">
+<% if (!entry.hidden || isAdmin) { %>
+<span
+  class="ip <%= entry.ip === ip ? 'my' : '' %> <%= entry.hidden ? 'transparent' : '' %>"
+  id="entry-<%= entry.ip.replace(/\./g, "") %>"
+>
   <div class="info-container">
     <div><%- include('flag', {countryCode: entry.countryCode}) -%></div>
     <div class="info">
@@ -10,4 +14,13 @@
   </div>
 
   <div class="message" title="<%= entry.reason %>"><%= entry.message %></div>
+
+  <% if (isAdmin) { %>
+  <div class="delete-container">
+    <button class="delete-button" onclick="toggleEntry('<%= entry.ip %>')">
+      Toggle
+    </button>
+  </div>
+  <% } %>
 </span>
+<% } %>

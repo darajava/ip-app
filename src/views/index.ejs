@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 
 <div class="ip-container invisible">
-  <%- include('page', { guestbook: guestbook }) -%>
+  <%- include('page', { guestbook: guestbook, isAdmin: isAdmin, ip: ip }) -%>
 </div>
 <button class="my-info">
   <img src="./info.svg" />
@@ -480,4 +480,23 @@
   initInfoModal();
 </script>
 
-<%- include('partials/footer') %>
+<% if (isAdmin) { %>
+<script>
+  function toggleEntry(ip) {
+    fetch(`/toggle/${ip}`, { method: "PUT" })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) {
+          document
+            .querySelector(`#entry-${ip.replace(/\./g, "")}`)
+            .classList.toggle("transparent");
+        } else {
+          alert(res.error);
+        }
+      })
+      .catch((e) => {
+        alert(e);
+      });
+  }
+</script>
+<% } %> <%- include('partials/footer') %>

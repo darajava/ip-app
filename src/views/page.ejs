@@ -1,2 +1,2 @@
-<% guestbook.forEach(entry => { %> <%- include('entry', {entry: entry}) -%> <%
-}); %>
+<% guestbook.forEach(entry => { %> <%- include('entry', {entry: entry, ip: ip,
+isAdmin: isAdmin}) -%> <% }); %>

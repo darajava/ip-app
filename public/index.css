@@ -21,6 +21,10 @@ body {
   display: none !important;
 }
 
+.transparent {
+  opacity: 0.5;
+}
+
 .ip-container {
   display: flex;
   flex-direction: row;

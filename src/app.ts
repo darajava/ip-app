@@ -6,6 +6,8 @@ import { realIps } from "./realIPs";
 import { broadcast, wss } from "./websocket";
 import ejs from "ejs";
 import { OpenAI } from "openai";
+const ipfilter = require("express-ipfilter").IpFilter;
+
 require("dotenv").config();
 
 // nodemon nonsense
@@ -13,9 +15,13 @@ process.on("SIGTERM", async () => {
   wss.close();
   setTimeout(() => process.exit(0), 3000);
 });
+const ips = [] as string[];
+
+// Create the server
 
 const app = express();
 
+app.use(ipfilter(ips));
 // Set EJS as the templating engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -55,6 +61,25 @@ app.get("/banned", async (req: Request, res: Response) => {
   });
 });
 
+app.put("/toggle/:ipToToggle", async (req: Request, res: Response) => {
+  const ip = await getIp(req);
+
+  const ipToToggle = req.params.ipToToggle;
+
+  if (!ip) {
+    return res.status(400).json({ error: "No IP provided" });
+  }
+
+  if (!ipToToggle) {
+    return res.status(400).json({ error: "No IP to toggle provided" });
+  }
+
+  const toggleSql = `UPDATE guestbook SET hidden = NOT hidden WHERE ip = ?`;
+  await connection.query(toggleSql, [ipToToggle]);
+
+  return res.status(200).json({ success: true });
+});
+
 app.get("/", async (req: Request, res: Response) => {
   const ip = await getIp(req);
 
@@ -77,6 +102,7 @@ app.get("/", async (req: Request, res: Response) => {
     return res.render("index", {
       ip,
       guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
+      isAdmin: await isAdmin(ip),
     });
   } else {
     return res.render("add", {
@@ -88,79 +114,17 @@ app.get("/", async (req: Request, res: Response) => {
 
 app.get("/guestbook", async (req: Request, res: Response) => {
   const ip = await getIp(req);
+
+  if (!ip) {
+    return res.status(400).json({ error: "No IP provided" });
+  }
+
   return res.render("index", {
     ip,
+    isAdmin: await isAdmin(ip),
     guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
   });
 });
-
-const populateDummy = async () => {
-  let ii = 0;
-  for (let j = 100; j < 101; j++) {
-    for (let i = 100; i < 255; i++) {
-      await addRandomEntry(`19.214.${i}.${j}`);
-
-      // console.log(result);
-    }
-  }
-};
-
-const addRandomEntry = async (ip: string) => {
-  const countries = ["de", "br", "us", "ru", "fr", "es", "it", "jp", "cn"];
-
-  function generateRandomSentence(): string {
-    const subjects = [
-      "The cat",
-      "A dog",
-      "The bird",
-      "A monkey",
-      "An astronaut",
-      "A programmer",
-    ];
-    const verbs = ["jumps", "runs", "flies", "writes", "eats", "builds"];
-    const objects = [
-      "over the moon",
-      "in the park",
-      "towards the tree",
-      "a novel",
-      "a sandwich",
-      "a website",
-    ];
-
-    // Generate random indices
-    const subjectIndex = Math.floor(Math.random() * subjects.length);
-    const verbIndex = Math.floor(Math.random() * verbs.length);
-    const objectIndex = Math.floor(Math.random() * objects.length);
-
-    // Form the sentence
-    let sentence = `${subjects[subjectIndex]} ${verbs[verbIndex]} ${objects[objectIndex]}.`;
-
-    return sentence;
-  }
-
-  function sentenceOfLength(length: number): string {
-    let sentence = "";
-    for (let i = 0; i < length; i++) {
-      sentence += " " + generateRandomSentence();
-    }
-    return sentence.substring(0, length);
-  }
-
-  const checkSql = `SELECT * FROM guestbook WHERE ip = ? and hidden = 0`;
-
-  const [results] = await connection.query(checkSql, [ip]);
-  if ((results as any[]).length > 0) {
-    return;
-  }
-
-  await addToDb(
-    ip,
-    countries[Math.floor(Math.random() * countries.length)],
-    sentenceOfLength(Math.floor(Math.random() * 256)),
-    false,
-    "hi"
-  );
-};
 
 app.get("/page/:page(\\d+)", async (req: Request, res: Response) => {
   const page = parseInt(req.params.page);
@@ -171,9 +135,16 @@ app.get("/page/:page(\\d+)", async (req: Request, res: Response) => {
     return res.status(200).send("end");
   }
 
+  const ip = await getIp(req);
+
+  if (!ip) {
+    return res.status(400).json({ error: "No IP provided" });
+  }
+
   return res.render("page", {
     guestbook,
-    ip: await getIp(req),
+    ip,
+    isAdmin: await isAdmin(ip),
   });
 });
 
@@ -288,6 +259,17 @@ const isBanned = async (ip: string) => {
   }
 };
 
+const isAdmin = async (ip: string) => {
+  const sql = `SELECT * FROM adminIps WHERE ip = ?`;
+  const [results] = await connection.query(sql, [ip]);
+
+  if ((results as any[]).length > 0) {
+    return true;
+  }
+
+  return false;
+};
+
 const getCountryCode = async (ip: string) => {
   var geo = geoip.lookup(ip as string);
 
@@ -304,6 +286,7 @@ const getIp = async (req: Request) => {
 
   if (ip === "::1") {
     ip = realIps[1];
+    ip = realIps[2];
   }
 
   ip = ip?.replace("::ffff:", "");
@@ -340,10 +323,6 @@ const addToDb = async (
       [ip]
     )) as any[];
 
-    if (await isBanned(ip)) {
-      return;
-    }
-
     broadcast({
       action: "entryAdded",
       messageJSON: JSON.stringify({
@@ -366,7 +345,6 @@ const getGuestbookPage = async (page: number, ip: string) => {
   FROM (
       SELECT *
       FROM guestbook
-      WHERE hidden = 0
       ORDER BY id DESC
       LIMIT ${pageSize} OFFSET ${offset}
   ) subquery
@@ -404,6 +382,10 @@ const initDb = async () => {
   );`;
 
   await connection.query(sql);
+
+  const sql2 = `CREATE TABLE IF NOT EXISTS adminIps (ip VARCHAR(45) UNIQUE NOT NULL);`;
+
+  await connection.query(sql2);
 };
 
 // Start the server
