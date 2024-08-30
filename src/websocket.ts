@@ -24,6 +24,9 @@ wss.on("connection", (ws, req) => {
   console.log("Client connected");
   const ip = (req.headers["x-real-ip"] as string) ?? req.socket.remoteAddress;
 
+  console.log(ip);
+  console.log(req.headers["x-real-ip"]);
+
   if (!ip) {
     console.log("No IP provided");
     ws.close();
