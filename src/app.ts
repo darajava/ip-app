@@ -6,6 +6,7 @@ import { realIps } from "./realIPs";
 import { broadcast, wss } from "./websocket";
 import ejs from "ejs";
 import { OpenAI } from "openai";
+require("dotenv").config();
 
 // nodemon nonsense
 process.on("SIGTERM", async () => {
