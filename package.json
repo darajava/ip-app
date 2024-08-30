@@ -7,7 +7,7 @@
     "build": "npm-run-all build:remove build:ts build:copy",
     "build:ts": "tsc",
     "build:remove": "rimraf build",
-    "build:copy": "copyfiles -u src/views/**/*  build/; copyfiles .env build/",
+    "build:copy": "copyfiles -u 1 src/views/**/* build/; copyfiles .env build/",
     "start": "node -r dotenv/config build/app.js",
     "dev": "nodemon -r dotenv/config --signal SIGTERM --watch src --exec ts-node src/app.ts"
   },
