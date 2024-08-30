@@ -21,7 +21,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static("public"));
 
 app.use(express.json());
-app.set("trust proxy", true);
+app.set("trust proxy", "loopback");
 
 let connection: mysql.Connection;
 
@@ -274,7 +274,7 @@ const getCountryCode = async (ip: string) => {
 };
 
 const getIp = async (req: Request) => {
-  let ip = req.ip;
+  let ip = req.headers["x-real-ip"] || req.socket.remoteAddress;
 
   if (Array.isArray(ip)) {
     ip = ip[0];
