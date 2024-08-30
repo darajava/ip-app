@@ -191,24 +191,30 @@ const isMessageSuitable = async (message: string) => {
       {
         role: "user",
         content: `
-        We asked the user to supply a message for display in a public guestbook.
-
-        If the user writes in a language other than English, the reason must be provided in that language.
+        We asked the user to supply a short (< 256 character) message for display in a public guestbook.
 
         The message supplied was: "${message}"
-
+        
         The message must be interesting AND must not contain profanity AND not be nonsensical AND have good grammar and spelling. Above all, it should be interesting and original for it to be suitable for the guestbook.
 
+        It doesn't need perfect spelling and it doesn't need perfect grammar. Reject if it has TERRIBLE spelling or grammar.
+
+        It doesn't necessarily need to be positive.
+
+        Determine if it's suitable for my guestbook.
+        
         Reply in JSON format with the following fields:
-
+        
         {
-          "reason": // reason for the verdict. Be harsh if not suitable. Don't tell them to try again because they will be banned. Don't refer to the original message.
           "suitable": // true | false
+          "reason": // reason for the verdict. Be harsh if not suitable. Don't tell them to try again because they will be banned. Don't refer to the original message. If it is suitable, be nice.
           "inputLanguage": // language of the message given
-        }
+          }
 
-        do not return a string in the suitable field, return true or false in bool format
-
+          If the user writes in a language other than English, the reason must be provided in that language.
+          
+          do not return a string in the suitable field, return true or false in bool format
+          
 
         Examples of uninteresting messages:
 
