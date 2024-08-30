@@ -357,12 +357,18 @@ const getGuestbookPage = async (page: number, ip: string) => {
 
 const initDb = async () => {
   console.log("Connected to MySQL", process.env.DB_PASS);
-  connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: process.env.DB_PASS,
-    database: "guestbook",
-  });
+  try {
+    connection = await mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      password: process.env.DB_PASS,
+      database: "guestbook",
+      port: 3306,
+    });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
 
   const sql = `CREATE TABLE IF NOT EXISTS guestbook (
     id INT AUTO_INCREMENT PRIMARY KEY,
