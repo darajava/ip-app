@@ -21,6 +21,15 @@
       Toggle
     </button>
   </div>
+
+  <div class="delete-container">
+    <button
+      class="delete-button"
+      onclick="deleteEntry('<%= entry.ip %>', '<%= entry.message %>')"
+    >
+      Delete
+    </button>
+  </div>
   <% } %>
 </span>
 <% } %>

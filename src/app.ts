@@ -90,6 +90,25 @@ app.put("/toggle/:ipToToggle", async (req: Request, res: Response) => {
   return res.status(200).json({ success: true });
 });
 
+app.delete("/delete/:ipToDelete", async (req: Request, res: Response) => {
+  const ip = getIp(req);
+
+  const ipToDelete = req.params.ipToDelete;
+
+  if (!ip) {
+    return res.status(400).json({ error: "No IP provided" });
+  }
+
+  if (!ipToDelete) {
+    return res.status(400).json({ error: "No IP to toggle provided" });
+  }
+
+  const deleteSql = `DELETE FROM guestbook WHERE ip = ?`;
+  await connection.query(deleteSql, [ipToDelete]);
+
+  return res.status(200).json({ success: true });
+});
+
 app.get("/", async (req: Request, res: Response) => {
   const ip = getIp(req);
 

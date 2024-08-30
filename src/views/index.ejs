@@ -498,5 +498,24 @@
         alert(e);
       });
   }
+
+  function deleteEntry(ip, message) {
+    if (!confirm(`Are you sure you want to delete ${message}?`)) {
+      return;
+    }
+
+    fetch(`/delete/${ip}`, { method: "DELETE" })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) {
+          document.querySelector(`#entry-${ip.replace(/\./g, "")}`).remove();
+        } else {
+          alert(res.error);
+        }
+      })
+      .catch((e) => {
+        alert(e);
+      });
+  }
 </script>
 <% } %> <%- include('partials/footer') %>
