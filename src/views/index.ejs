@@ -434,7 +434,8 @@
     };
 
     // Handle connection close
-    ws.onclose = () => {
+    ws.onclose = (w, closeEvent) => {
+      console.log("Connection closed", closeEvent);
       console.log("Disconnected from server");
 
       setTimeout(() => {
