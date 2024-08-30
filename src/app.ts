@@ -191,7 +191,7 @@ const isMessageSuitable = async (message: string) => {
       {
         role: "user",
         content: `
-        We asked the user to supply a short (< 256 character) message for display in a public guestbook.
+        We asked the user to supply a message for display in a public guestbook.
 
         The message supplied was: "${message}"
         
