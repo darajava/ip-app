@@ -224,6 +224,7 @@ const isMessageSuitable = async (message: string) => {
 
         Hi there honey.
 
+        ---------------
 
         Examples of interesting messages:
 
@@ -232,6 +233,8 @@ const isMessageSuitable = async (message: string) => {
         Look around and pick one beautiful thing about your surroundings. We are so lucky to be here!
 
         Goodbye ip, you made a great home for 6 years. So much YouTube watched through you
+
+        I learned that in the pursuit of success, you need to work hard. But by working hard the most rewarding thing that is gained is in fact the ability to work hard. I’ve learned that hard work is a great feeling and that is my success.
         `,
       },
     ],
