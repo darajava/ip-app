@@ -55,7 +55,7 @@ wss.on("connection", (ws, req) => {
 
   // Handle client disconnect
   ws.on("close", (w: any, closeEvent: any, reason: any) => {
-    console.log("Connection closed", closeEvent, reason);
+    console.log("Connection closed", closeEvent, reason.toString());
     console.log("Client disconnected");
   });
 });
