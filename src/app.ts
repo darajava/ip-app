@@ -230,10 +230,9 @@ const isMessageSuitable = async (message: string) => {
         Reply in JSON format with the following fields:
 
         {
-          "suitable": true | false,
-          "interesting": true | false,
+          "reason": // reason for the verdict. Be harsh if not suitable. Don't tell them to try again because they will be banned. Don't refer to the original message.
+          "suitable": // true | false
           "inputLanguage": // language of the message given
-          "reason": // reason for the verdict. Be harsh. Don't tell them to try again because they will be banned.
         }
 
         do not return a string in the suitable field, return true or false in bool format
@@ -269,6 +268,8 @@ const isMessageSuitable = async (message: string) => {
       banned: false,
     };
   }
+
+  console.log(resp.choices[0].message.content);
 
   let gptInfo = JSON.parse(resp.choices[0].message.content);
   return {
