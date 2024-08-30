@@ -356,6 +356,7 @@ const getGuestbookPage = async (page: number, ip: string) => {
 };
 
 const initDb = async () => {
+  console.log("Connected to MySQL", process.env.DB_PASS);
   connection = await mysql.createConnection({
     host: "localhost",
     user: "root",
