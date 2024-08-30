@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm-run-all build:ts build:copy",
     "build:ts": "tsc",
-    "build:copy": "copyfiles src/views/**/* ./.env build/",
+    "build:copy": "copyfiles src/views/* src/views/**/* ./.env build/",
     "start": "node -r dotenv/config build/app.js",
     "dev": "nodemon -r dotenv/config --signal SIGTERM --watch src --exec ts-node src/app.ts"
   },
