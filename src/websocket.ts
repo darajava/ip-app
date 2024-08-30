@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import { isAdmin } from "./app";
 
 // Create a WebSocket server instance
 export const wss = new WebSocket.Server({ port: 8080 });
@@ -9,6 +10,7 @@ type Connections = {
 
 type Connection = {
   ip: string;
+  isAdmin: boolean;
   ws: WebSocket;
   isAlive: boolean;
 };
@@ -20,7 +22,7 @@ type Message = {
 
 const connections: Connections = {};
 
-wss.on("connection", (ws, req) => {
+wss.on("connection", async (ws, req) => {
   console.log("Client connected");
   const ip = (req.headers["x-real-ip"] as string) ?? req.socket.remoteAddress;
 
@@ -48,7 +50,8 @@ wss.on("connection", (ws, req) => {
   }
 
   connections[ip] = {
-    ip: req.socket.remoteAddress!,
+    ip,
+    isAdmin: await isAdmin(ip),
     ws,
     isAlive: true,
   };
@@ -90,9 +93,11 @@ wss.on("close", () => {
   clearInterval(interval);
 });
 
-export const broadcast = (message: Message) => {
+export const broadcast = (message: Message, adminsOnly = false) => {
   Object.values(connections).forEach((entry) => {
-    entry.ws.send(JSON.stringify(message));
+    if (!adminsOnly || entry.isAdmin) {
+      entry.ws.send(JSON.stringify(message));
+    }
   });
 };
 

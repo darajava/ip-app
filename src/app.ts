@@ -310,7 +310,7 @@ const isBanned = async (ip: string) => {
   }
 };
 
-const isAdmin = async (ip: string) => {
+export const isAdmin = async (ip: string) => {
   const sql = `SELECT * FROM adminIps WHERE ip = ?`;
   const [results] = await connection.query(sql, [ip]);
 
@@ -375,16 +375,18 @@ const addToDb = async (
       [ip]
     )) as any[];
 
-    broadcast({
-      action: "entryAdded",
-      messageJSON: JSON.stringify({
-        html: await ejs.renderFile(path.join("./src/views", "entry.ejs"), {
-          entry: justInserted[0],
-          ip: req ? getIp(req) || "0.0.0.0" : "0.0.0.0",
-          isAdmin: req ? await isAdmin(getIp(req) || "0.0.0.0") : false,
+    broadcast(
+      {
+        action: "entryAdded",
+        messageJSON: JSON.stringify({
+          html: await ejs.renderFile(path.join("./src/views", "entry.ejs"), {
+            entry: justInserted[0],
+            ip: req ? getIp(req) || "0.0.0.0" : "0.0.0.0",
+          }),
         }),
-      }),
-    });
+      },
+      justInserted[0].hidden
+    );
   } catch (error: any) {
     console.log(error);
   }
