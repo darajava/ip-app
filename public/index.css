@@ -42,6 +42,29 @@ body {
   gap: 5px;
   color: rgb(33, 33, 33);
   max-width: calc(100% / 4);
+  width: calc(100% / 4);
+  max-width: 250px;
+}
+
+@media only screen and (max-width: 768px) {
+  .ip {
+    max-width: calc(100% / 3);
+    width: calc(100% / 3);
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .ip {
+    max-width: calc(100% / 2);
+    width: calc(100% / 2);
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  .ip {
+    max-width: calc(100%);
+    width: calc(100%);
+  }
 }
 
 .ip .info-container {
