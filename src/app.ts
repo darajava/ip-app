@@ -25,13 +25,13 @@ app.set("trust proxy", "loopback");
 
 let connection: mysql.Connection;
 
-setInterval(async () => {
-  const random1 = Math.floor(Math.random() * 255);
-  const random2 = Math.floor(Math.random() * 255);
-  const random3 = Math.floor(Math.random() * 255);
-  const random4 = Math.floor(Math.random() * 255);
-  addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
-}, 1000);
+// setInterval(async () => {
+//   const random1 = Math.floor(Math.random() * 255);
+//   const random2 = Math.floor(Math.random() * 255);
+//   const random3 = Math.floor(Math.random() * 255);
+//   const random4 = Math.floor(Math.random() * 255);
+//   addRandomEntry(`${random1}.${random2}.${random3}.${random4}`);
+// }, 1000);
 
 app.get("/banned", async (req: Request, res: Response) => {
   const ip = await getIp(req);
@@ -69,10 +69,10 @@ app.get("/", async (req: Request, res: Response) => {
   // }
 
   if (await hasSigned(ip)) {
-    console.log(
-      "already signed",
-      await getGuestbookPage(0, (await getIp(req)) as string)
-    );
+    if (await isBanned(ip)) {
+      return res.redirect("/banned");
+    }
+
     return res.render("index", {
       ip,
       guestbook: await getGuestbookPage(0, (await getIp(req)) as string),
@@ -195,7 +195,7 @@ app.post("/add", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Weird IP provided" });
   }
 
-  const bannedInfo = await isBanned(message);
+  const bannedInfo = await isMessageSuitable(message);
 
   await addToDb(ip, countryCode, message, bannedInfo.banned, bannedInfo.reason);
 
@@ -206,7 +206,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
 
-const isBanned = async (message: string) => {
+const isMessageSuitable = async (message: string) => {
   const resp = await openai.chat.completions.create({
     messages: [
       {
@@ -264,6 +264,15 @@ const isBanned = async (message: string) => {
     banned: !gptInfo.suitable,
     reason: gptInfo.reason,
   };
+};
+
+const isBanned = async (ip: string) => {
+  const sql = `SELECT * FROM guestbook WHERE ip = ? and hidden = 1`;
+  const [results] = await connection.query(sql, [ip]);
+
+  if ((results as any[]).length > 0) {
+    return true;
+  }
 };
 
 const getCountryCode = async (ip: string) => {
