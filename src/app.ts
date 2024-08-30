@@ -74,12 +74,15 @@ app.get("/banned", async (req: Request, res: Response) => {
 app.put("/toggle/:ipToToggle", async (req: Request, res: Response) => {
   const ip = getIp(req);
 
-  const ipToToggle = req.params.ipToToggle;
-
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
   }
 
+  if (!(await isAdmin(ip))) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const ipToToggle = req.params.ipToToggle;
   if (!ipToToggle) {
     return res.status(400).json({ error: "No IP to toggle provided" });
   }
@@ -93,12 +96,15 @@ app.put("/toggle/:ipToToggle", async (req: Request, res: Response) => {
 app.delete("/delete/:ipToDelete", async (req: Request, res: Response) => {
   const ip = getIp(req);
 
-  const ipToDelete = req.params.ipToDelete;
-
   if (!ip) {
     return res.status(400).json({ error: "No IP provided" });
   }
 
+  if (!(await isAdmin(ip))) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const ipToDelete = req.params.ipToDelete;
   if (!ipToDelete) {
     return res.status(400).json({ error: "No IP to toggle provided" });
   }
