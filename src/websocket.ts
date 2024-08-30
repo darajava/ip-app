@@ -22,7 +22,7 @@ const connections: Connections = {};
 
 wss.on("connection", (ws, req) => {
   console.log("Client connected");
-  const ip = req.socket.remoteAddress;
+  const ip = (req.headers["x-real-ip"] as string) ?? req.socket.remoteAddress;
 
   if (!ip) {
     console.log("No IP provided");
