@@ -97,6 +97,7 @@ const populateDummy = async () => {
 };
 
 const addRandomEntry = async (ip: string) => {
+  console.log("adding", ip);
   const countries = ["de", "br", "us", "ru", "fr", "es", "it", "jp", "cn"];
 
   function generateRandomSentence(): string {
@@ -310,14 +311,12 @@ const addToDb = async (
       [ip, countryCode, message, banned, reason]
     );
 
-    if (!!reason) {
-      return;
-    }
-
     const [justInserted] = (await connection.query(
       `SELECT * FROM guestbook WHERE ip = ?`,
       [ip]
     )) as any[];
+
+    console.log(justInserted);
 
     broadcast({
       action: "entryAdded",
